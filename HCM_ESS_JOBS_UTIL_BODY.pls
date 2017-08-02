@@ -1,59 +1,51 @@
-CREATE OR REPLACE PACKAGE BODY hcm_ess_jobs_util AS
+create or replace package body hcm_ess_jobs_util as
 -- -----------------------------------------------------------------------------------
 -- function
 -- -----------------------------------------------------------------------------------
-    FUNCTION get_cnt_by_vp (
-        p_vp   VARCHAR2
-    ) RETURN NUMBER AS
-        v_cnt   NUMBER;
-    BEGIN
-        SELECT
-            COUNT(*)
-        INTO
+    function get_cnt_by_vp (
+        p_vp varchar2
+    ) return number as
+        v_cnt number;
+    begin
+        select count(*) into
             v_cnt
-        FROM
-            hcm_ess_jobs_inventory
-        WHERE
-            dev_contact_vp = p_vp;
+        from hcm_ess_jobs_inventory where dev_contact_vp = p_vp;
 
-        RETURN v_cnt;
-    END get_cnt_by_vp;
+        return v_cnt;
+    end get_cnt_by_vp;
 
 -------------------------------------------------------------------------------------
 -- procedure
 -------------------------------------------------------------------------------------
 
-    PROCEDURE procedure_demo (
-        p_id   IN VARCHAR2
-    ) AS
-        v_tmp   VARCHAR(200);
-    BEGIN
-        SELECT
-            checkpoint_already
-        INTO
+    procedure procedure_demo (
+        p_id in varchar2
+    ) as
+        v_tmp varchar(200);
+    begin
+        select checkpoint_already into
             v_tmp
-        FROM
-            hcm_ess_jobs_inventory
-        WHERE
-            id = p_id;
+        from hcm_ess_jobs_inventory where id = p_id;
 
         dbms_output.put_line('procedure_demo:' || v_tmp);
-    END;
+    end;
     
 -------------------------------------------------------------------------------------
 -- table
 -------------------------------------------------------------------------------------
 
-    PROCEDURE type_table_test( p_id   IN number) AS
+    procedure type_table_test (
+        p_id in number
+    ) as
     -- 按一维数组使用记录表
-        TYPE reg_table_type IS
-            TABLE OF VARCHAR2(25) INDEX BY BINARY_INTEGER;
-        v_reg_table   reg_table_type;
+        type reg_table_type is
+            table of varchar2(25) index by binary_integer;
+        v_reg_table reg_table_type;
   --按二维数组使用记录表 
-        TYPE my_table_type IS
-            TABLE OF hcm_ess_jobs_inventory%rowtype INDEX BY BINARY_INTEGER;
-        v_table       my_table_type;
-    BEGIN
+        type my_table_type is
+            table of hcm_ess_jobs_inventory%rowtype index by binary_integer;
+        v_table my_table_type;
+    begin
         v_reg_table(1) := 'Europe';
         v_reg_table(2) := 'Americas';
         v_reg_table(3) := 'Asia';
@@ -74,28 +66,24 @@ CREATE OR REPLACE PACKAGE BODY hcm_ess_jobs_util AS
          ||  v_reg_table(5) );
          
         ----------  按二维数组使用记录表 ---------
-        SELECT
-            CHECKPOINT_ALREADY,
-            CHECKPOINT_ETA,
+        select
+            checkpoint_already,
+            checkpoint_eta,
             id
-        INTO
-            v_table(1).CHECKPOINT_ALREADY,v_table(1).CHECKPOINT_ETA,v_table(1).id
-        FROM
-            hcm_ess_jobs_inventory
-        WHERE
-            id = p_id;
+        into
+            v_table(1).checkpoint_already,v_table(1).checkpoint_eta,v_table(1).id
+        from hcm_ess_jobs_inventory where id = p_id;
 
         dbms_output.put_line(
             'CHECKPOINT_ALREADY:'
-             ||  v_table(1).CHECKPOINT_ALREADY
+             ||  v_table(1).checkpoint_already
              ||  '  CHECKPOINT_ETA：'
-             ||  v_table(1).CHECKPOINT_ETA
+             ||  v_table(1).checkpoint_eta
              ||  '  id：'
              ||  v_table(1).id
         );
 
-
-    END;
+    end;
     
     
 
@@ -103,82 +91,55 @@ CREATE OR REPLACE PACKAGE BODY hcm_ess_jobs_util AS
 -- data_type_test
 -------------------------------------------------------------------------------------
 
-    PROCEDURE data_type_test (
-        p_id   IN VARCHAR2
-    ) AS
-        v_tmp                VARCHAR(200);
-        v_cnt                NUMBER;
+    procedure data_type_test (
+        p_id in varchar2
+    ) as
+        v_tmp varchar(200);
+        v_cnt number;
         /********************* VARRAY *************************/
         --定义一个最多保存5个VARCHAR(25)数据类型成员的VARRAY数据类型 
-        TYPE reg_varray_type IS
-            VARRAY ( 5 ) OF VARCHAR(25);
-        v_reg_varray         reg_varray_type; 
+        type MY_ARRAY_TYPE  is
+            varray ( 5 ) of varchar(25);
+        v_varray MY_ARRAY_TYPE ; 
         /********************* record *************************/
-        TYPE record_type_ess_job IS RECORD (
-            checkpoint_already   hcm_ess_jobs_inventory.checkpoint_already%type,
-            checkpoint_eta       hcm_ess_jobs_inventory.checkpoint_eta%type
+        type record_type_ess_job is record (
+            checkpoint_already hcm_ess_jobs_inventory.checkpoint_already%type,
+            checkpoint_eta hcm_ess_jobs_inventory.checkpoint_eta%type
         );
-        v_ess_record         record_type_ess_job;
+        v_ess_record record_type_ess_job;
         /********************* cursor *************************/
-        CURSOR cur IS
-            SELECT DISTINCT
-                ( dev_contact_vp ) AS vp
-            FROM
-                hcm_ess_jobs_inventory;
+        cursor cur is select distinct ( dev_contact_vp ) as vp from hcm_ess_jobs_inventory;
 
-    BEGIN
-       /********************* VARRAY *************************/
-        v_reg_varray := reg_varray_type(
-            '中国',
-        '美国','英国','日本',
-            '法国'
+    begin
+       DBMS_OUTPUT.PUT_LINE('---------------- VARRAY ---------------------------------------');
+        v_varray := MY_ARRAY_TYPE (
+            'a','b','c','d','e'
         );
-        dbms_output.put_line(
-            '地区名称：'
-             ||  v_reg_varray(1)
-             ||  '、'
-             ||  v_reg_varray(2)
-             ||  '、'
-             ||  v_reg_varray(3)
-             ||  '、'
-             ||  v_reg_varray(4)
-        );
-
-        dbms_output.put_line('赋予初值NULL的第5个成员的值：'
-         ||  v_reg_varray(5) ); 
-        --用构造函数语法赋予初值后就可以这样对成员赋值 
-        v_reg_varray(5) := '法国';
-        dbms_output.put_line('第5个成员的值：'
-         ||  v_reg_varray(5) ); 
-        /********************* cursor *************************/
-        v_tmp := '';
-        FOR rec_d IN cur LOOP
+        dbms_output.put_line('N_ENTRIES :'||v_varray.COUNT()||',ARRAY_CAPACITY :'||v_varray.LIMIT());
+        FOR I IN 1..v_varray.COUNT() LOOP  
+          DBMS_OUTPUT.PUT_LINE('V('||I||')=' || v_varray(I));  
+        END LOOP; 
+        v_varray(5) := 'chi';
+        dbms_output.put_line('v5：' ||  v_varray(5) ); 
+        dbms_output.put_line('---------------- cursor ---------------------------------------');
+        for rec_d in cur loop
             v_cnt := hcm_ess_jobs_util.get_cnt_by_vp(rec_d.vp);
-            v_tmp := v_tmp
-             ||  rec_d.vp
-             ||  '('
-             ||  v_cnt
-             ||  ')<br>';
-        END LOOP;
-
-        dbms_output.put_line('cursor:' || v_tmp);
+             dbms_output.put_line(rec_d.vp||'('||v_cnt|| ')');
+        end loop;
         
-       /********************* record *************************/
-        SELECT
+        DBMS_OUTPUT.PUT_LINE('---------------- record ---------------------------------------');
+        select
             checkpoint_already,
             checkpoint_eta
-        INTO
+        into
             v_ess_record
-        FROM
-            hcm_ess_jobs_inventory
-        WHERE
-            id = p_id;
+        from hcm_ess_jobs_inventory where id = p_id;
 
         v_tmp := 'Checkpoint Already :'
          ||  v_ess_record.checkpoint_already
          ||  ',CHECKPOINT_ETA :'
          ||  v_ess_record.checkpoint_eta;
         dbms_output.put_line('Record:' || v_tmp);
-    END;
+    end;
 
-END hcm_ess_jobs_util;
+end hcm_ess_jobs_util;
