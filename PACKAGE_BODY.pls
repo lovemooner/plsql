@@ -12,7 +12,7 @@ create or replace package body hcm_ess_jobs_util as
         from hcm_ess_jobs_inventory where dev_contact_vp = p_vp;
 
         return v_cnt;
-    end get_cnt_by_vp;
+    end ;
 
 -------------------------------------------------------------------------------------
 -- procedure

@@ -9,7 +9,7 @@ begin
         'a','b','c','d','e'
     );
     dbms_output.put_line(
-        'ENTRIES :' ||v_varray.count() ||',CAPACITY :' ||v_varray.limit()
+        'ENTRIES :' ||v_varray.count() ||',CAPACITY :' ||v_varray.limit()||'FIRST :' ||v_varray.FIRST||'LAST :' ||v_varray.LAST
     );
 
     for i in 1..v_varray.count () loop
@@ -20,7 +20,10 @@ begin
 
     v_varray(5) := 'chi';
     dbms_output.put_line('v5£º' ||v_varray(5) );
-   
-
+    
+   FOR i IN v_varray.FIRST..v_varray.LAST LOOP 
+     DBMS_OUTPUT.PUT_LINE ( 'FOR-v_varray :'||v_varray(i)); 
+   END LOOP; 
+    
 end;
 
