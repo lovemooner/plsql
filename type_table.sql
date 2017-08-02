@@ -1,5 +1,7 @@
+set serveroutput on;
 declare
     -- 按一维数组使用记录表
+  
     type reg_table_type is
         table of varchar2(25) index by binary_integer;
     v_reg_table reg_table_type;
